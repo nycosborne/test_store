@@ -1,4 +1,4 @@
-stores = {1: "dan", 2: "JJs"}
+stores = {}
 items = {
     1:
         {
