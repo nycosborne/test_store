@@ -2,6 +2,7 @@ import uuid
 from flask import Flask, request
 from flask_smorest import abort
 from db import items, stores
+from resources import store
 
 app = Flask(__name__)
 
