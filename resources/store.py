@@ -8,7 +8,7 @@ blp = Blueprint("store", __name__, description="Operations on stores")
 
 
 @blp.route("/store/<string:store_id>")
-class StoreList(MethodView):
+class Store(MethodView):
     def get(self, store_id):
         try:
             return stores[store_id]
@@ -21,3 +21,23 @@ class StoreList(MethodView):
             return {"message": "Store was deleted"}, 204
         except KeyError:
             return {"message": "Store not found"}, 400
+
+
+@blp.route("/stores")
+class StoreList(MethodView):
+    def get(self):
+        return {"stores": list(stores.values())}
+
+    def post(self):
+        request_data = request.get_json()
+        if "name" not in request_data:
+            abort(400, description="Missing store name in payload")
+
+        for store in stores.values():
+            if request_data["name"] == store["name"]:
+                abort(400, description="Store with this name already exists")
+
+        store_id = uuid.uuid4().hex
+        store_new = {**request_data, "store_id": store_id}
+        stores[store_id] = store_new
+        return store_new, 201
