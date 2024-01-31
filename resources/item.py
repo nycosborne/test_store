@@ -2,8 +2,12 @@ import uuid
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from db import items, stores
+from sqlalchemy.exc import SQLAlchemyError
+
 from schemas import ItemsSchema, ItemUpdate
+
+from db import db
+from models import ItemModel
 
 blp = Blueprint("items", __name__, description="Operations on items")
 
@@ -37,24 +41,20 @@ class Item(MethodView):  # Get item by Id
 
 @blp.route("/items")
 class ItemList(MethodView):
-    def get(self):  # Get all stores
-        return {"stores": list(items.values())}
+    # todo: need to add responce validation
+    # def get(self):  # Get all stores
+    #     return {"stores": list(items.values())}
 
     @blp.arguments(ItemsSchema)
+    # @blp.response(200, ItemsSchema)
     def post(self, item_data):  # Added new item
-        for item in items.values():
-            if (
-                    item_data["name"] == item["name"]
-                    and item_data["store_id"] == item["store_id"]
-            ):
-                abort(400, description="Already have item")
+        return {"message": item_data}
+        # item = ItemModel(**item_data)
+        # try:
+        #     db.session.add(item)
+        #     db.session.commit()
+        # except SQLAlchemyError:
+        #     abort(404, message="oter")
+        #
+        # return item
 
-        if item_data["store_id"] not in stores:
-            # return {"message": item_data}, 404
-            abort(404, description="Item not found.")
-
-        item_id = uuid.uuid4().hex
-        item_new = {**item_data, "id": item_id}
-        items[item_id] = item_new
-
-        return {"message": (item_data, {"item ID:": item_id})}, 201
