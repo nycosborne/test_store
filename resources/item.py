@@ -4,7 +4,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 
-from schemas import ItemsSchema, ItemUpdate
+from schemas import ItemSchema, ItemUpdateSchema
 
 from db import db
 from models import ItemModel
@@ -14,7 +14,7 @@ blp = Blueprint("items", __name__, description="Operations on items")
 
 @blp.route("/item/<string:item_id>")
 class Item(MethodView):  # Get item by Id
-    @blp.response(200, ItemsSchema)
+    @blp.response(200, ItemSchema)
     def get(self, item_id):
         try:
             return items[item_id]
@@ -28,7 +28,7 @@ class Item(MethodView):  # Get item by Id
         except KeyError:
             abort(404, description="Unable to find item")
 
-    @blp.arguments(ItemUpdate)
+    @blp.arguments(ItemUpdateSchema)
     def put(self, item_data, item_id):  # Update item by id
         try:
             print(item_data)
@@ -39,22 +39,22 @@ class Item(MethodView):  # Get item by Id
             abort(404, description="Item not found.")
 
 
-@blp.route("/items")
+@blp.route("/item")
 class ItemList(MethodView):
-    # todo: need to add responce validation
-    # def get(self):  # Get all stores
-    #     return {"stores": list(items.values())}
+    @blp.response(200, ItemSchema(many=True))
+    def get(self):
+        return ItemModel.query.all()
 
-    @blp.arguments(ItemsSchema)
-    # @blp.response(200, ItemsSchema)
-    def post(self, item_data):  # Added new item
-        return {"message": item_data}
-        # item = ItemModel(**item_data)
-        # try:
-        #     db.session.add(item)
-        #     db.session.commit()
-        # except SQLAlchemyError:
-        #     abort(404, message="oter")
-        #
-        # return item
+    @blp.arguments(ItemSchema)
+    @blp.response(201, ItemSchema)
+    def post(self, item_data):
+        item = ItemModel(**item_data)
+
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            abort(500, message="An error occurred while inserting the item." + str(e))
+
+        return item
 

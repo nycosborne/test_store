@@ -3,8 +3,13 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import stores
+from models import StoreModel
+from sqlalchemy.exc import SQLAlchemyError
 
-blp = Blueprint("store", __name__, description="Operations on stores")
+from db import db
+from schemas import StoreSchema
+
+blp = Blueprint("Stores", "stores", description="Operations on stores")
 
 
 @blp.route("/store/<string:store_id>")
@@ -23,21 +28,20 @@ class Store(MethodView):
             return {"message": "Store not found"}, 400
 
 
-@blp.route("/stores")
+@blp.route("/store")
 class StoreList(MethodView):
     def get(self):
         return {"stores": list(stores.values())}
 
-    def post(self):
-        request_data = request.get_json()
-        if "name" not in request_data:
-            abort(400, description="Missing store name in payload")
+    @blp.arguments(StoreSchema)
+    @blp.response(201, StoreSchema)
+    def post(self, request_data):
+        store = StoreModel(**request_data)
 
-        for store in stores.values():
-            if request_data["name"] == store["name"]:
-                abort(400, description="Store with this name already exists")
+        try:
+            db.session.add(store)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            abort(500, message="oter" + str(e))
 
-        store_id = uuid.uuid4().hex
-        store_new = {**request_data, "store_id": store_id}
-        stores[store_id] = store_new
-        return store_new, 201
+        return store

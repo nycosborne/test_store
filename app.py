@@ -13,7 +13,6 @@ app = Flask(__name__)
 
 
 def create_app(db_url=None):
-
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
@@ -33,7 +32,6 @@ def create_app(db_url=None):
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
     return app
-
 
 
 app = create_app()

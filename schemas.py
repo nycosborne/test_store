@@ -1,32 +1,26 @@
 from marshmallow import Schema, fields
 
 
-class PlainItemsSchema(Schema):
-    id = fields.Str(dump_only=True)
+class PlainItemSchema(Schema):
+    id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
     price = fields.Float(required=True)
 
 
 class PlainStoreSchema(Schema):
-    id = fields.Str(dump_only=True)
-    name = fields.Str(required=True)
+    id = fields.Int(dump_only=True)
+    name = fields.Str()
 
 
-class ItemsSchema(Schema):
-    id = fields.Str(dump_only=True)
-    name = fields.Str(required=True)
-    price = fields.Float(required=True)
+class ItemSchema(PlainItemSchema):
+    store_id = fields.Int(required=True, load_only=True)
+    store = fields.Nested(PlainStoreSchema(), dump_only=True)
 
 
-class ItemUpdate(Schema):
+class ItemUpdateSchema(Schema):
     name = fields.Str()
     price = fields.Float()
 
 
-class ItemSchema(PlainItemsSchema):
-    store_id = fields.Int(required=True, load_only=True)
-    store = fields.Nested(PlainItemsSchema(), dump_only=True)
-
-
 class StoreSchema(PlainStoreSchema):
-    items = fields.List(fields.Nested(PlainItemsSchema()), dump_only=True)
+    items = fields.List(fields.Nested(PlainItemSchema()), dump_only=True)
