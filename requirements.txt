@@ -1,4 +1,7 @@
 flask
 flask-smorest
 python-dotenv
-flask_sqlalchemy
+flask-sqlalchemy
+SQLAlchemy
+marshmallow
+SQLAlchemy
