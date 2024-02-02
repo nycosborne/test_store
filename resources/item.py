@@ -1,11 +1,8 @@
-import uuid
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 
 from schemas import ItemSchema, ItemUpdateSchema
-
 from db import db
 from models import ItemModel
 
@@ -16,27 +13,31 @@ blp = Blueprint("items", __name__, description="Operations on items")
 class Item(MethodView):  # Get item by Id
     @blp.response(200, ItemSchema)
     def get(self, item_id):
-        try:
-            return items[item_id]
-        except KeyError:
-            return {"message": "Item not found"}, 400
+        item = ItemModel.query.get_or_404(item_id)
+        return item
 
     def delete(self, item_id):  # delete item by Id
-        try:
-            del items[item_id]
-            return {"message": "Item was deleted"}, 204
-        except KeyError:
-            abort(404, description="Unable to find item")
+        item = ItemModel.query.get_or_404(item_id)
+        db.session.delete(item)
+        db.session.commit()
+
+        return {"Message": "Deleted item Id: " + item_id}
 
     @blp.arguments(ItemUpdateSchema)
+    @blp.response(200, ItemSchema)
     def put(self, item_data, item_id):  # Update item by id
-        try:
-            print(item_data)
-            item = items[item_id]
-            item |= item_data
-            return {"message": (item_data, {"item ID:": item_id, "New Item": item})}, 201
-        except KeyError:
-            abort(404, description="Item not found.")
+        item = ItemModel.query.get(item_id)
+
+        if item:
+            item.price = item_data["price"]
+            item.name = item_data["name"]
+        else:
+            item = ItemModel(**item_data)
+
+        db.session.add(item)
+        db.session.commit()
+
+        return item
 
 
 @blp.route("/item")
@@ -57,4 +58,3 @@ class ItemList(MethodView):
             abort(500, message="An error occurred while inserting the item." + str(e))
 
         return item
-
