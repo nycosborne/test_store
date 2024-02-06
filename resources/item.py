@@ -1,6 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
+from flask_jwt_extended import jwt_required
 
 from schemas import ItemSchema, ItemUpdateSchema
 from db import db
@@ -9,7 +10,7 @@ from models import ItemModel
 blp = Blueprint("items", __name__, description="Operations on items")
 
 
-@blp.route("/item/<string:item_id>")
+@blp.route("/item/<int:item_id>")
 class Item(MethodView):  # Get item by Id
     @blp.response(200, ItemSchema)
     def get(self, item_id):
@@ -42,6 +43,7 @@ class Item(MethodView):  # Get item by Id
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema(many=True))
     def get(self):
         return ItemModel.query.all()
