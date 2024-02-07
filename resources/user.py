@@ -56,7 +56,7 @@ class UserLogout(MethodView):
     def post(self):
         jti = get_jwt()["jti"]
         BLOCKLIST.add(jti)
-        return {"message": "Successfully logged out and killed the token"}
+        return {"message": "Successfully logged out"}, 200
 
 
 @blp.route("/users")
@@ -74,7 +74,7 @@ class User(MethodView):
         user = UserModel.query.get_or_404(user_id)
         return user
 
-    @jwt_required(refresh=True)
+    @jwt_required()
     def delete(self, user_id):
         jwt = get_jwt()
         if not jwt.get("is_admin"):

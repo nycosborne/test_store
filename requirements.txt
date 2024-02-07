@@ -7,3 +7,4 @@ marshmallow
 SQLAlchemy
 flask-jwt-extended
 passlib
+psycopg2
