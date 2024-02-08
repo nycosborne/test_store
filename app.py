@@ -10,8 +10,10 @@ from resources.tags import blp as TagBlueprint
 from resources.user import blp as UserBlueprint
 
 from flask_jwt_extended import JWTManager
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+load_dotenv()
 
 
 def create_app(db_url=None):
